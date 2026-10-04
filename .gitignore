@@ -1,0 +1,7 @@
+# Third-party dependency — clone separately, see RUNBOOK.md. Never commit it (it is
+# a large external repo with its own remote, and holds .env with API keys).
+control-tower/
+
+.DS_Store
+__pycache__/
+*.pyc

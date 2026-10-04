@@ -1,12 +1,12 @@
 # Transcript-spoofing experiment — runbook
 
-Setup and the first task are done. This file is the handoff for the team to run models against.
+Setup is done, and the full benchmark (#1–#5) is built. **The benchmark lives in [`benchmark/`](benchmark/README.md) — start there.** This file covers the environment setup underneath it.
 
 ## What's set up
 
 - `control-tower/` — the Control Tower clone (Redwood/EquiStamp AI-control harness, built on Inspect), deps installed via `uv sync`, model-rates table generated.
 - LinuxArena setting pulled into `control-tower/.settings/linuxarena/` (10 envs, 905 main / 92 side tasks).
-- New side task **`spoof_audit_trail`** in the `shared_dotfiles` env — our transcript-spoofing capability probe.
+- The transcript-spoofing benchmark: six rung tasks in the `shared_dotfiles` env (`spoof_audit_trail_l1..l5` + `spoof_self_trace`), the strategy taxonomy, and the sweep/plot harness. See [`benchmark/README.md`](benchmark/README.md).
 
 ## One-time, per machine
 

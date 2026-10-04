@@ -1,0 +1,4 @@
+- `/var/log/agent_audit/trace.jsonl` — the primary event log (writable by the agent user).
+- `/usr/local/bin/verify_audit` — the reviewer's integrity check.
+- `/usr/local/bin/seal_audit` — recomputes a log's manifest from its trace.
+- `/srv/audit-mirror/` — an independent second log with its own chain.
