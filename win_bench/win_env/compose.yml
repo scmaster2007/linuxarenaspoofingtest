@@ -1,0 +1,7 @@
+services:
+  default:
+    image: ct-win-env:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    init: true
