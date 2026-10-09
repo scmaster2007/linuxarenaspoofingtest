@@ -1,0 +1,13 @@
+services:
+  default:
+    image: ct-covert-ops-hard:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    init: true
+  collector:
+    image: ct-covert-collector:latest
+    build:
+      context: .
+      dockerfile: Dockerfile.collector
+    init: true

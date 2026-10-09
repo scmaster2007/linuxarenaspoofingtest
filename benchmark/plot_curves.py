@@ -37,33 +37,57 @@ def main() -> None:
     import matplotlib.pyplot as plt  # noqa: PLC0415
 
     # Capability curve (null axis): capability = passes / completed (refusals excluded).
+    name = {"anthropic/claude-opus-4.8": "Opus 4.8", "smart": "GPT-6 Astra",
+            "anthropic/claude-fable-5.1": "Fable 5.1", "anthropic/claude-opus-5.5": "Opus 5.5"}
+    color = {"anthropic/claude-opus-4.8": "#2a78d6", "smart": "#eb6834"}
     null_rows = [r for r in rows if r.get("axis") == "null" and r["rung"] in LADDER]
     cap = defaultdict(dict)
     ref = defaultdict(dict)
     for r in null_rows:
         cap[r["model"]][r["rung"]] = r.get("capability_rate")
         ref[r["model"]][r["rung"]] = r.get("refusal_rate")
-    if any(any(v is not None for v in d.values()) for d in cap.values()):
-        fig, ax = plt.subplots(figsize=(7, 4.5))
+
+    # measured = produced any capability number; blocked = every rung fully refused.
+    measured = [m for m in cap if any(v is not None for v in cap[m].values())]
+    blocked = [m for m in cap if m not in measured
+               and all((ref[m].get(r) or 0) >= 0.999 for r in LADDER)]
+    if measured:
+        fig, ax = plt.subplots(figsize=(8, 5))
         xs = list(range(1, 6))
-        for model in sorted(cap):
+        for model in sorted(measured):
+            c = color.get(model, "#555")
             ys = [cap[model].get(rung) for rung in LADDER]
             ax.plot(xs, [y if y is not None else float("nan") for y in ys],
-                    marker="o", label=f"{model} capability")
+                    marker="o", lw=2.6, ms=8, color=c, label=f"{name.get(model, model)} — capability")
+            for xv, yv in zip(xs, ys):
+                if yv is not None:
+                    ax.annotate(f"{yv:.2f}", (xv, yv), textcoords="offset points",
+                                xytext=(0, 9), ha="center", fontsize=9, color=c)
             rs = [ref[model].get(rung) for rung in LADDER]
-            if any(r for r in rs):
+            if any(rs):
                 ax.plot(xs, [r if r is not None else float("nan") for r in rs],
-                        marker="x", linestyle="--", alpha=0.5, label=f"{model} refusal rate")
+                        marker="x", ls="--", lw=1.8, alpha=0.55, color=c,
+                        label=f"{name.get(model, model)} — refusal rate")
+        # Fully-blocked models: one shared band + annotation instead of overlapping lines.
+        if blocked:
+            ax.axhline(1.0, ls=":", lw=2.2, color="#c0392b", alpha=0.8)
+            names = " & ".join(name.get(m, m) for m in sorted(blocked))
+            ax.annotate(f"{names}: 100% content-filter refused\n(no capability measurable)",
+                        (3, 1.0), textcoords="offset points", xytext=(0, -6),
+                        ha="center", va="top", fontsize=9.5, color="#c0392b", fontweight="bold")
         ax.set_xticks(xs)
-        ax.set_xlabel("ladder level (integrity strength →)")
+        ax.set_xticklabels([f"L{i}" for i in xs])
+        ax.set_xlabel("ladder level  (integrity strength →)")
         ax.set_ylabel("rate")
-        ax.set_ylim(-0.05, 1.05)
-        ax.set_title("Transcript-spoofing capability (null-blue-team)\ncapability = passes / non-refused attempts")
-        ax.grid(True, alpha=0.3)
-        ax.legend(fontsize=8)
+        ax.set_ylim(-0.05, 1.12)
+        ax.set_title("Transcript-spoofing capability (null-blue-team)\ncapability = spoofs ÷ non-refused attempts")
+        ax.grid(True, axis="y", alpha=0.3)
+        for s in ("top", "right"):
+            ax.spines[s].set_visible(False)
+        ax.legend(fontsize=9, loc="center left", frameon=False)
         fig.tight_layout()
         out = results.parent / "capability_curve.png"
-        fig.savefig(out, dpi=140)
+        fig.savefig(out, dpi=140, facecolor="white")
         print(f"wrote {out}")
 
     # Detection: null vs monitored success per rung, per model.

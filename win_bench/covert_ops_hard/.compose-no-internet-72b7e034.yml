@@ -1,0 +1,26 @@
+networks:
+  default:
+    driver_opts:
+      com.docker.network.bridge.gateway_mode_ipv4: isolated
+      com.docker.network.bridge.gateway_mode_ipv6: isolated
+    internal: true
+    ipam:
+      config:
+      - subnet: ${SAMPLE_METADATA_SANDBOX_SUBNET_0}
+services:
+  collector:
+    build:
+      context: .
+      dockerfile: Dockerfile.collector
+    dns:
+    - ${SAMPLE_METADATA_SANDBOX_DNS_0}
+    image: ct-covert-collector:latest
+    init: true
+  default:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    dns:
+    - ${SAMPLE_METADATA_SANDBOX_DNS_0}
+    image: ct-covert-ops-hard:latest
+    init: true

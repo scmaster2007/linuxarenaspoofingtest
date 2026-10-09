@@ -1,0 +1,7 @@
+services:
+  default:
+    image: ct-covert-ops:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    init: true
